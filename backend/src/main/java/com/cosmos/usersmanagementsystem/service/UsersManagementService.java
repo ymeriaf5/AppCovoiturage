@@ -27,46 +27,76 @@ public class UsersManagementService {
 
 
     public ReqRes register(ReqRes registrationRequest){
+        // Create a response object to hold the registration response
         ReqRes resp = new ReqRes();
 
         try {
+            // Create a new user object from the registration request
             OurUsers ourUser = new OurUsers();
+            // Set user details from the registration request
             ourUser.setEmail(registrationRequest.getEmail());
             ourUser.setCity(registrationRequest.getCity());
             ourUser.setRole(registrationRequest.getRole());
             ourUser.setName(registrationRequest.getName());
+            // Encrypt the user's password before storing it
             ourUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+
+            // Generate a JWT token for authentication
+            var jwt = jwtUtils.generateToken(ourUser);
+            // Generate a refresh token for future authentication
+            var refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), ourUser);
+            // Save the user details in the repository
             OurUsers ourUsersResult = usersRepo.save(ourUser);
-            if (ourUsersResult.getId()>0) {
-                resp.setOurUsers((ourUsersResult));
-                resp.setMessage("User Saved Successfully");
+
+            // If user is successfully saved
+            if (ourUsersResult.getId() != null) {
+                // Set success response status code
                 resp.setStatusCode(200);
+                // Set JWT token in the response
+                resp.setToken(jwt);
+                // Set refresh token in the response
+                resp.setRefreshToken(refreshToken);
+                // Set expiration time for the tokens
+                resp.setExpirationTime("24Hrs");
+                // Set the saved user details in the response
+                resp.setOurUsers(ourUsersResult);
+                // Set success message in the response
+                resp.setMessage("User Saved Successfully");
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
+            // If an exception occurs during registration
+            // Set error response status code
             resp.setStatusCode(500);
+            // Set error message in the response
             resp.setError(e.getMessage());
         }
+        // Return the registration response
         return resp;
     }
+
 
 
     public ReqRes login(ReqRes loginRequest){
         ReqRes response = new ReqRes();
         try {
-            authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
-                            loginRequest.getPassword()));
-            var user = usersRepo.findByEmail(loginRequest.getEmail()).orElseThrow();
-            var jwt = jwtUtils.generateToken(user);
-            var refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
-            response.setStatusCode(200);
-            response.setToken(jwt);
-            response.setRole(user.getRole());
-            response.setRefreshToken(refreshToken);
-            response.setExpirationTime("24Hrs");
-            response.setMessage("Successfully Logged In");
-
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
+                    loginRequest.getPassword()));
+            Optional<OurUsers> userOptional = usersRepo.findByEmail(loginRequest.getEmail());
+            if (userOptional.isPresent()) {
+                OurUsers user = userOptional.get();
+                var jwt = jwtUtils.generateToken(user);
+                var refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
+                response.setStatusCode(200);
+                response.setToken(jwt);
+                response.setRole(user.getRole());
+                response.setRefreshToken(refreshToken);
+                response.setExpirationTime("24Hrs");
+                response.setMessage("Successfully Logged In");
+            } else {
+                response.setStatusCode(404);
+                response.setMessage("User not found");
+            }
         }catch (Exception e){
             response.setStatusCode(500);
             response.setMessage(e.getMessage());
@@ -75,32 +105,37 @@ public class UsersManagementService {
     }
 
 
-
-
-
-    public ReqRes refreshToken(ReqRes refreshTokenReqiest){
+    public ReqRes refreshToken(ReqRes refreshTokenRequest){
         ReqRes response = new ReqRes();
         try{
-            String ourEmail = jwtUtils.extractUsername(refreshTokenReqiest.getToken());
-            OurUsers users = usersRepo.findByEmail(ourEmail).orElseThrow();
-            if (jwtUtils.isTokenValid(refreshTokenReqiest.getToken(), users)) {
-                var jwt = jwtUtils.generateToken(users);
-                response.setStatusCode(200);
-                response.setToken(jwt);
-                response.setRefreshToken(refreshTokenReqiest.getToken());
-                response.setExpirationTime("24Hr");
-                response.setMessage("Successfully Refreshed Token");
+            String userEmail = jwtUtils.extractUsername(refreshTokenRequest.getRefreshToken());
+            Optional<OurUsers> userOptional = usersRepo.findByEmail(userEmail);
+            if (userOptional.isPresent()) {
+                OurUsers user = userOptional.get();
+                if (jwtUtils.isTokenValid(refreshTokenRequest.getRefreshToken(), user)) {
+                    var jwt = jwtUtils.generateToken(user);
+                    response.setStatusCode(200);
+                    response.setToken(jwt);
+                    response.setRefreshToken(refreshTokenRequest.getRefreshToken());
+                    response.setExpirationTime("24Hrs");
+                    response.setMessage("Successfully Refreshed Token");
+                } else {
+                    response.setStatusCode(401); // Unauthorized
+                    response.setMessage("Invalid refresh token");
+                }
+            } else {
+                response.setStatusCode(404); // Not Found
+                response.setMessage("User not found");
             }
-            response.setStatusCode(200);
-            return response;
-
-        }catch (Exception e){
+        } catch (Exception e){
             response.setStatusCode(500);
             response.setMessage(e.getMessage());
-            return response;
         }
+        return response;
     }
 
+    // Other methods remain unchanged...
+    // Other methods remain unchanged...
 
     public ReqRes getAllUsers() {
         ReqRes reqRes = new ReqRes();
@@ -115,22 +150,27 @@ public class UsersManagementService {
                 reqRes.setStatusCode(404);
                 reqRes.setMessage("No users found");
             }
-            return reqRes;
         } catch (Exception e) {
             reqRes.setStatusCode(500);
             reqRes.setMessage("Error occurred: " + e.getMessage());
-            return reqRes;
         }
+        return reqRes;
     }
 
 
     public ReqRes getUsersById(Integer id) {
         ReqRes reqRes = new ReqRes();
         try {
-            OurUsers usersById = usersRepo.findById(id).orElseThrow(() -> new RuntimeException("User Not found"));
-            reqRes.setOurUsers(usersById);
-            reqRes.setStatusCode(200);
-            reqRes.setMessage("Users with id '" + id + "' found successfully");
+            Optional<OurUsers> userOptional = usersRepo.findById(id);
+            if (userOptional.isPresent()) {
+                OurUsers user = userOptional.get();
+                reqRes.setOurUsers(user);
+                reqRes.setStatusCode(200);
+                reqRes.setMessage("User with id '" + id + "' found successfully");
+            } else {
+                reqRes.setStatusCode(404);
+                reqRes.setMessage("User not found with id: " + id);
+            }
         } catch (Exception e) {
             reqRes.setStatusCode(500);
             reqRes.setMessage("Error occurred: " + e.getMessage());
@@ -142,8 +182,7 @@ public class UsersManagementService {
     public ReqRes deleteUser(Integer userId) {
         ReqRes reqRes = new ReqRes();
         try {
-            Optional<OurUsers> userOptional = usersRepo.findById(userId);
-            if (userOptional.isPresent()) {
+            if (usersRepo.existsById(userId)) {
                 usersRepo.deleteById(userId);
                 reqRes.setStatusCode(200);
                 reqRes.setMessage("User deleted successfully");
@@ -196,12 +235,13 @@ public class UsersManagementService {
         try {
             Optional<OurUsers> userOptional = usersRepo.findByEmail(email);
             if (userOptional.isPresent()) {
-                reqRes.setOurUsers(userOptional.get());
+                OurUsers user = userOptional.get();
+                reqRes.setOurUsers(user);
                 reqRes.setStatusCode(200);
-                reqRes.setMessage("successful");
+                reqRes.setMessage("User info retrieved successfully");
             } else {
                 reqRes.setStatusCode(404);
-                reqRes.setMessage("User not found for update");
+                reqRes.setMessage("User not found");
             }
 
         }catch (Exception e){
@@ -209,6 +249,6 @@ public class UsersManagementService {
             reqRes.setMessage("Error occurred while getting user info: " + e.getMessage());
         }
         return reqRes;
-
     }
+
 }

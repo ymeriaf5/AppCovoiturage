@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import UserService from "../service/UserService";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -23,8 +23,19 @@ function RegistrationPage() {
     try {
       // Call the register method from UserService
 
-      const token = localStorage.getItem("token");
-      await UserService.register(formData, token);
+      // const token = localStorage.getItem("token");
+      await UserService.register(formData);
+
+      const userData = await UserService.login(formData.email, formData.password);
+      console.log(userData);
+      if (userData.token) {
+        localStorage.setItem("token", userData.token);
+        localStorage.setItem("role", userData.role);
+        // Navigate to the user's profile page
+        navigate("/profile");
+      } else {
+        console.log(userData.message);
+      }
 
       // Clear the form fields after successful registration
       setFormData({
@@ -35,7 +46,7 @@ function RegistrationPage() {
         city: "",
       });
       alert("L'utilisateur a été enregistré avec succès.");
-      navigate("/admin/user-management");
+      navigate("/profile");
     } catch (error) {
       console.error("Erreur lors de l'inscription de l'utilisateur :", error);
       alert("Une erreur s'est produite lors de l'inscription de l'utilisateur");
