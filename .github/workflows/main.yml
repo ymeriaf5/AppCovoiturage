@@ -21,28 +21,6 @@ jobs:
         distribution: 'temurin'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
-
-  build_frontend:
-    name: Build Frontend
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-      - name: Build React App
-        run: npm run build
-        working-directory: frontend
-
-  run_tests:
-    name: Run Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-      
-      # Add steps to run backend and frontend tests here
-
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
