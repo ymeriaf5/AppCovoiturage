@@ -2,7 +2,9 @@ package com.cosmos.usersmanagementsystem.controller;
 
 import com.cosmos.usersmanagementsystem.dto.ReqRes;
 import com.cosmos.usersmanagementsystem.entity.OurUsers;
+import com.cosmos.usersmanagementsystem.service.ReservationService;
 import com.cosmos.usersmanagementsystem.service.UsersManagementService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -10,9 +12,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class UserManagementController {
-    @Autowired
+@AllArgsConstructor
+public class Admin {
     private UsersManagementService usersManagementService;
+    private  ReservationService reservationService;
 
     @PostMapping("/auth/register")
     public ResponseEntity<ReqRes> regeister(@RequestBody ReqRes req){
@@ -57,6 +60,15 @@ public class UserManagementController {
     @DeleteMapping("/admin/delete/{userId}")
     public ResponseEntity<ReqRes> deleteUSer(@PathVariable Integer userId){
         return ResponseEntity.ok(usersManagementService.deleteUser(userId));
+    }
+    @DeleteMapping("/{reservationId}")
+    public ResponseEntity<String> deleteReservation(@PathVariable Integer reservationId) {
+        boolean deleted = reservationService.deleteReservation(reservationId);
+        if (deleted) {
+            return ResponseEntity.ok("Reservation with ID " + reservationId + " deleted successfully");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 
