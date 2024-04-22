@@ -7,9 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.Date;
-
 @Entity
 @Data
 @AllArgsConstructor
@@ -28,5 +26,6 @@ public class Offres {
     private Date heure_arriv;
     private Double prix;
     private int placeDispo;
+    private int placeInitiale;
     private Boolean status;
 }
