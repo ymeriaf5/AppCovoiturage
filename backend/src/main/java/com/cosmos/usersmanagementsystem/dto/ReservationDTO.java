@@ -17,6 +17,9 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Builder
 public class ReservationDTO {
+    private int statusCode;
+    private String error;
+    private String message;
     private Integer id;
     private OffresDTO offre;
     private List<OurUsers> users;

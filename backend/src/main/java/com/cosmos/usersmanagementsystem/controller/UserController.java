@@ -4,6 +4,7 @@ import com.cosmos.usersmanagementsystem.entity.OurUsers;
 import com.cosmos.usersmanagementsystem.entity.Reservation;
 import com.cosmos.usersmanagementsystem.service.DriverServices;
 import com.cosmos.usersmanagementsystem.service.ReservationService;
+import com.cosmos.usersmanagementsystem.service.UserServices;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -19,7 +21,8 @@ import java.util.List;
 @AllArgsConstructor
 public class UserController {
     private final ReservationService reservationService;
-    private DriverServices driverServices;
+    private final DriverServices driverServices;
+    private final UserServices userServices;
     @PostMapping("/add")
     public ResponseEntity<String> addReservation(@RequestBody ReservationDTO reservationDTO) {
         try {
@@ -50,6 +53,14 @@ public class UserController {
     @GetMapping("/offers")
     public ResponseEntity<List<OffresDTO>> getAllOffres() {
         List<OffresDTO> offresList = driverServices.getAllOffres();
+        return ResponseEntity.ok(offresList);
+    }
+    @GetMapping("/offersFiltre")
+    public ResponseEntity<List<OffresDTO>> getOffresFiltered(@RequestParam String villeDep,
+                                                             @RequestParam String villeArrv,
+                                                             @RequestParam Date date
+    ) {
+        List<OffresDTO> offresList = userServices.getOffreFiltered(villeDep,villeArrv,date);
         return ResponseEntity.ok(offresList);
     }
 }

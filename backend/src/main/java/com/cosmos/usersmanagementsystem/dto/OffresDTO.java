@@ -17,7 +17,10 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Builder
 public class OffresDTO {
-    private Integer id;
+    private int statusCode;
+    private String error;
+    private String message;
+    private int id;
     private Integer driverId;
     private Integer villeDepartId;
     private Integer villeArrivId;

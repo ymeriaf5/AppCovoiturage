@@ -17,30 +17,6 @@ import java.util.stream.Collectors;
 public class DriverServices {
     private final OffresRepository offresRepository;
 
-    public Offres addOffre(OffresDTO offreDTO) {
-        Offres offre = mapToEntity(offreDTO);
-        return offresRepository.save(offre);
-    }
-
-    public OffresDTO updateOffres(Integer offreId, Offres offres) {
-        OffresDTO offresDTO = new OffresDTO();
-        Optional<Offres> optionalOffres = offresRepository.findById(offreId);
-        if (optionalOffres.isPresent()) {
-            Offres existantOffre = optionalOffres.get();
-            existantOffre.setVille_depart(offres.getVille_depart());
-            existantOffre.setVille_arriv(offres.getVille_arriv());
-            existantOffre.setHeure_depart(offres.getHeure_depart());
-            existantOffre.setHeure_arriv(offres.getHeure_arriv());
-            existantOffre.setPrix(offres.getPrix());
-            existantOffre.setPlaceDispo(offres.getPlaceDispo());
-            existantOffre.setPlaceInitiale(offres.getPlaceInitiale());
-            existantOffre.setStatus(offres.getStatus());
-            Offres savedOffre = offresRepository.save(existantOffre);
-            offresDTO = mapToDTO(savedOffre);
-        }
-        return offresDTO;
-    }
-
     private Offres mapToEntity(OffresDTO offreDTO) {
         Offres offre = new Offres();
         offre.setId(offreDTO.getId());
@@ -52,12 +28,57 @@ public class DriverServices {
         offresDTO.setId(offres.getId());
         return offresDTO;
     }
-    public boolean deleteOffre(Integer offreId) {
-        if (offresRepository.existsById(offreId)) {
-            offresRepository.deleteById(offreId);
-            return true;
+
+    public Offres addOffre(OffresDTO offreDTO) {
+            Offres offre = mapToEntity(offreDTO);
+            return offresRepository.save(offre);
+    }
+
+    public OffresDTO updateOffres(Integer offreId, Offres offres) {
+        OffresDTO offresDTO = new OffresDTO();
+        try {
+            Optional<Offres> optionalOffres = offresRepository.findById(offreId);
+            if (optionalOffres.isPresent()) {
+                Offres existantOffre = optionalOffres.get();
+                existantOffre.setVille_depart(offres.getVille_depart());
+                existantOffre.setVille_arriv(offres.getVille_arriv());
+                existantOffre.setHeure_depart(offres.getHeure_depart());
+                existantOffre.setHeure_arriv(offres.getHeure_arriv());
+                existantOffre.setPrix(offres.getPrix());
+                existantOffre.setPlaceDispo(offres.getPlaceDispo());
+                existantOffre.setPlaceInitiale(offres.getPlaceInitiale());
+                existantOffre.setStatus(offres.getStatus());
+                Offres savedOffre = offresRepository.save(existantOffre);
+                offresDTO = mapToDTO(savedOffre);
+                offresDTO.setStatusCode(200);
+                offresDTO.setMessage("Successfully Updated Offre");
+            }
+            else {
+                offresDTO.setStatusCode(404);
+                offresDTO.setMessage("Offer not found");
+            }
+        }catch (Exception e){
+            offresDTO.setStatusCode(500);
+            offresDTO.setMessage(e.getMessage());
         }
-        return false; // Handle not found case
+        return offresDTO;
+    }
+
+
+    public boolean deleteOffre(Integer offreId) {
+        OffresDTO offresDTO = new OffresDTO();
+        try {
+            if (offresRepository.existsById(offreId)) {
+                offresRepository.deleteById(offreId);
+                offresDTO.setStatusCode(200);
+                offresDTO.setMessage("Successfully Deleted Offer");
+                return true;
+            }
+        }catch (Exception e){
+            offresDTO.setStatusCode(500);
+            offresDTO.setMessage("Error occurred: " + e.getMessage());
+        }
+        return false;
     }
     public List<OffresDTO> getAllOffres() {
         List<Offres> offresList = offresRepository.findAll();
