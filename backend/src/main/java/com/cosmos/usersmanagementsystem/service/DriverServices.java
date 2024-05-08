@@ -40,10 +40,10 @@ public class DriverServices {
             Optional<Offres> optionalOffres = offresRepository.findById(offreId);
             if (optionalOffres.isPresent()) {
                 Offres existantOffre = optionalOffres.get();
-                existantOffre.setVille_depart(offres.getVille_depart());
-                existantOffre.setVille_arriv(offres.getVille_arriv());
-                existantOffre.setHeure_depart(offres.getHeure_depart());
-                existantOffre.setHeure_arriv(offres.getHeure_arriv());
+                existantOffre.setVilleDepart(offres.getVilleDepart());
+                existantOffre.setVilleArriv(offres.getVilleArriv());
+                existantOffre.setHeureDepart(offres.getHeureDepart());
+                existantOffre.setHeureDarriv(offres.getHeureDarriv());
                 existantOffre.setPrix(offres.getPrix());
                 existantOffre.setPlaceDispo(offres.getPlaceDispo());
                 existantOffre.setPlaceInitiale(offres.getPlaceInitiale());

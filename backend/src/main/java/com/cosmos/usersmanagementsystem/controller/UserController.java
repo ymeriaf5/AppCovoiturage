@@ -2,6 +2,7 @@ package com.cosmos.usersmanagementsystem.controller;
 import com.cosmos.usersmanagementsystem.dto.*;
 import com.cosmos.usersmanagementsystem.entity.OurUsers;
 import com.cosmos.usersmanagementsystem.entity.Reservation;
+import com.cosmos.usersmanagementsystem.entity.Villes;
 import com.cosmos.usersmanagementsystem.service.DriverServices;
 import com.cosmos.usersmanagementsystem.service.ReservationService;
 import com.cosmos.usersmanagementsystem.service.UserServices;
@@ -56,8 +57,8 @@ public class UserController {
         return ResponseEntity.ok(offresList);
     }
     @GetMapping("/offersFiltre")
-    public ResponseEntity<List<OffresDTO>> getOffresFiltered(@RequestParam String villeDep,
-                                                             @RequestParam String villeArrv,
+    public ResponseEntity<List<OffresDTO>> getOffresFiltered(@RequestParam Villes villeDep,
+                                                             @RequestParam Villes villeArrv,
                                                              @RequestParam Date date
     ) {
         List<OffresDTO> offresList = userServices.getOffreFiltered(villeDep,villeArrv,date);

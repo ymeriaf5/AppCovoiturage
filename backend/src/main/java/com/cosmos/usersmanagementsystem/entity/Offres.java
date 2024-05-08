@@ -18,12 +18,14 @@ public class Offres {
     private Integer id;
     @OneToOne(fetch = FetchType.LAZY)
     private OurUsers driver;
+
     @OneToOne(fetch = FetchType.LAZY)
-    private Villes ville_depart;
+    private Villes villeDepart;
     @OneToOne(fetch = FetchType.LAZY)
-    private Villes ville_arriv;
-    private Date heure_depart;
-    private Date heure_arriv;
+    private Villes villeArriv;
+
+    private Date heureDepart;
+    private Date heureDarriv;
     private Double prix;
     private int placeDispo;
     private int placeInitiale;
